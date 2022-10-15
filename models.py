@@ -13,21 +13,27 @@ class VGG(nn.Module):
         self.features = self._make_layers(cfg[vgg_name])
        
         self.linear_layers = nn.Sequential(
+            #apply flatten layer?
+            #https://programmerall.com/article/8686604124/
+            #nn.Flatten()
+            #Dropout should not be included when performing on validation data
+            #Tune Dropout parameter for performance, lower it and check performance
+            #https://nnart.org/should-you-use-dropout/
+            #https://discuss.pytorch.org/t/what-is-the-difference-between-nn-dropout2d-and-nn-dropout/108192
             nn.Linear(in_features=512*7*7, out_features=4096),
-            nn.ReLU(inplace=True),
-            nn.Dropout2d(0.5),
+            nn.ReLU(),
+            nn.Dropout(0.5),
             nn.Linear(in_features=4096, out_features=4096),
-            nn.ReLU(inplace=True),
-            nn.Dropout2d(0.5),
-            nn.Linear(in_features=4096, out_features=1)
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(in_features=4096, out_features=1),
         )
-        #self.regressor = nn.Linear(512 * 7 * 7, 1)
-        #self.last=nn.Sigmoid()
 
     def forward(self, x):
-        out = self.features(x)
-        out = out.view(out.size(0), -1)
-        out = self.linear_layers(out)
+        out = self.features(x) #conv layers
+        out = out.view(out.size(0), -1) #flatten layer
+        out = self.linear_layers(out) #fully-connected layers
+        out = out.view(out.size(0), -1) #flatten layer
         return out
 
     def _make_layers(self, cfg):
@@ -39,11 +45,7 @@ class VGG(nn.Module):
             else:
                 layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
                            nn.BatchNorm2d(x),
-                           nn.ReLU(inplace=True)]
+                           nn.ReLU()]
                 in_channels = x
         return nn.Sequential(*layers)
-
-
-#out_feature of prev: 512
-#(512-2)/2+1
 
