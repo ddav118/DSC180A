@@ -44,9 +44,13 @@ class ImageSubset(Dataset):
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.data[idx][0]+'.jpg')
         image = read_image(img_path)
+        print(image)
         label = self.data[idx][0]
+        print(label)
         bnpp = self.img_labels[self.img_labels['unique_key']==self.data[idx][0]]['bnpp_value_log'].values[0]
+        print(bnpp)
         if self.transform:
             image = self.transform(image)
-        sample = {'image': image, 'Patient': label, 'bnpp_log': bnpp}
-        return sample
+            print('4')
+        #sample = {'image': image, 'Patient': label, 'bnpp_log': bnpp}
+        return [image, label, bnpp]

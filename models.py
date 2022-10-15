@@ -11,13 +11,23 @@ class VGG(nn.Module):
     def __init__(self, vgg_name):
         super(VGG, self).__init__()
         self.features = self._make_layers(cfg[vgg_name])
-        self.classifier = nn.Linear(512 * 7 * 7, 1)
+       
+        self.linear_layers = nn.Sequential(
+            nn.Linear(in_features=512*7*7, out_features=4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout2d(0.5),
+            nn.Linear(in_features=4096, out_features=4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout2d(0.5),
+            nn.Linear(in_features=4096, out_features=1)
+        )
+        #self.regressor = nn.Linear(512 * 7 * 7, 1)
         #self.last=nn.Sigmoid()
 
     def forward(self, x):
         out = self.features(x)
         out = out.view(out.size(0), -1)
-        out = self.classifier(out)
+        out = self.linear_layers(out)
         return out
 
     def _make_layers(self, cfg):
@@ -34,5 +44,6 @@ class VGG(nn.Module):
         return nn.Sequential(*layers)
 
 
-
+#out_feature of prev: 512
+#(512-2)/2+1
 
