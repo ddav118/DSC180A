@@ -20,13 +20,13 @@ class VGG(nn.Module):
             #Tune Dropout parameter for performance, lower it and check performance
             #https://nnart.org/should-you-use-dropout/
             #https://discuss.pytorch.org/t/what-is-the-difference-between-nn-dropout2d-and-nn-dropout/108192
-            nn.Linear(in_features=512*7*7, out_features=4096),
+            nn.Linear(in_features=512*7*7, out_features=100),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(in_features=4096, out_features=4096),
+            nn.Linear(in_features=100, out_features=100),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(in_features=4096, out_features=1),
+            nn.Linear(in_features=100, out_features=1),
         )
 
     def forward(self, x):

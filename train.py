@@ -15,7 +15,7 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
     for i, data in tqdm(enumerate(training_loader), total=len(training_loader)):
         # Every data instance is an input + label pair
         image, bnpp = data
-        image, bnpp = image.to(device), bnpp.to(device)
+        image, bnpp = image.to(device, non_blocking=True), bnpp.to(device, non_blocking=True)
         image = image.float()
         bnpp = bnpp.float()
         #print(image.shape)
@@ -30,18 +30,20 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
         # Compute the loss and its gradients
         loss = loss_fn(outputs.squeeze(), bnpp)
         loss.backward()
-        print(loss)
+        #print(loss)
 
         # Adjust learning weights
         optimizer.step()
 
         # Gather data and report
         running_loss += loss.item()
-        if i % 1000 == 999:
-            last_loss = running_loss / 1000 # loss per batch
-            print('  batch {} loss: {}'.format(i + 1, last_loss))
-            tb_x = epoch_index * len(training_loader) + i + 1
-            tb_writer.add_scalar('Loss/train', last_loss, tb_x)
-            running_loss = 0.
+        #print(running_loss)
+    last_loss += running_loss / (len(training_loader)) #number of batches
+        #if i % 1000 == 0:
+        #   last_loss = running_loss / len(training_loader) # loss per batch
+            #print('  batch {} loss: {}'.format(i + 1, last_loss))
+            #tb_x = epoch_index * len(training_loader) + i + 1
+            #tb_writer.add_scalar('Loss/train', last_loss, tb_x)
+        #    running_loss = 0.
 
     return last_loss
