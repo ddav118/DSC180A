@@ -1,10 +1,12 @@
 import os
 import pandas as pd
+import numpy as np
 import torch
 from torchvision.io import read_image
 from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 from PIL import Image
+import cv2
 
 class ImageDataset(Dataset):
     def __init__(self, csv_file, img_dir, transform=None):
@@ -42,7 +44,7 @@ class ImageSubset(Dataset):
         dict = {}
         for i, key in enumerate(list(h5py_file.keys())):
             #creating dataframe for images, converting images to PIL first
-            dict[i] = [key, Image.fromarray(h5py_file[key][:])]
+            dict[i] = [key, h5py_file[key][:]]
         df = pd.DataFrame(dict).T
         df.columns = ['patientID', 'image']
 
@@ -56,7 +58,10 @@ class ImageSubset(Dataset):
         #img_path = os.path.join(self.img_dir, self.data[idx][0]+'.jpg')
         #image = read_image(img_path)
         image = self.data.loc[idx,'image']
-        #print(image)
+        #print(type(image))
+        image = cv2.resize(image, dsize=(224, 224))
+        image = (image - np.min(image)) / np.max(image)
+        image = image[None]
         #patient = self.data.loc[idx,'patientID']
         #print(patient)
         bnpp = self.data.loc[idx,'bnpp_value_log']
@@ -69,4 +74,8 @@ class ImageSubset(Dataset):
             image = self.transform(image)
             #print('4')
         #sample = {'image': image, 'Patient': label, 'bnpp_log': bnpp}
+        #print(np.min(image), np.max(image))
+        #print(image.shape)
+        image = torch.from_numpy(image)
+        #print(type(image))
         return image, bnpp

@@ -3,6 +3,8 @@ import torch
 # training
 
 def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writer):
+    model.train()
+    
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     running_loss = 0.
     last_loss = 0.
@@ -14,6 +16,10 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
         # Every data instance is an input + label pair
         image, bnpp = data
         image, bnpp = image.to(device), bnpp.to(device)
+        image = image.float()
+        bnpp = bnpp.float()
+        #print(image.shape)
+        #print(torch.mean(image))
 
         # Zero your gradients for every batch!
         optimizer.zero_grad()
@@ -24,6 +30,7 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
         # Compute the loss and its gradients
         loss = loss_fn(outputs.squeeze(), bnpp)
         loss.backward()
+        print(loss)
 
         # Adjust learning weights
         optimizer.step()
