@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import numpy as np
 import torch
 # training
 
@@ -8,6 +9,7 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     running_loss = 0.
     last_loss = 0.
+    losses = np.array([])
 
     # Here, we use enumerate(training_loader) instead of
     # iter(training_loader) so that we can track the batch
@@ -30,14 +32,15 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
         # Compute the loss and its gradients
         loss = loss_fn(outputs.squeeze(), bnpp)
         loss.backward()
-        #print(loss)
+        #print(f"{loss=}")
 
         # Adjust learning weights
         optimizer.step()
 
         # Gather data and report
         running_loss += loss.item()
-        #print(running_loss)
+        losses = np.append(losses, loss.item())
+        #print(f"{running_loss=}")
     last_loss += running_loss / (len(training_loader)) #number of batches
         #if i % 1000 == 0:
         #   last_loss = running_loss / len(training_loader) # loss per batch
@@ -46,4 +49,4 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
             #tb_writer.add_scalar('Loss/train', last_loss, tb_x)
         #    running_loss = 0.
 
-    return last_loss
+    return np.mean(losses)
