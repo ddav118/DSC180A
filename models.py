@@ -15,25 +15,26 @@ class VGG(nn.Module):
         self.linear_layers = nn.Sequential(
             #apply flatten layer?
             #https://programmerall.com/article/8686604124/
-            #nn.Flatten()
+            nn.Flatten(),
             #Dropout should not be included when performing on validation data
             #Tune Dropout parameter for performance, lower it and check performance
             #https://nnart.org/should-you-use-dropout/
             #https://discuss.pytorch.org/t/what-is-the-difference-between-nn-dropout2d-and-nn-dropout/108192
-            nn.Linear(in_features=512*7*7, out_features=100),
-            nn.ReLU(),
+            
+            nn.Linear(in_features=512*7*7, out_features=500),
+            nn.LeakyReLU(),
             nn.Dropout(0.5),
-            nn.Linear(in_features=100, out_features=100),
-            nn.ReLU(),
+            nn.Linear(in_features=500, out_features=500),
+            nn.LeakyReLU(),
             nn.Dropout(0.5),
-            nn.Linear(in_features=100, out_features=1),
+            nn.Linear(in_features=500, out_features=1)
         )
 
     def forward(self, x):
         out = self.features(x) #conv layers
-        out = out.view(out.size(0), -1) #flatten layer
+        #out = out.view(out.size(0), -1) #flatten layer
         out = self.linear_layers(out) #fully-connected layers
-        out = out.view(out.size(0), -1) #flatten layer
+        #out = out.view(out.size(0), -1) #flatten layer
         return out
 
     def _make_layers(self, cfg):
@@ -43,9 +44,9 @@ class VGG(nn.Module):
             if x == 'M':
                 layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
             else:
-                layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
+                layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1, bias=False),
                            nn.BatchNorm2d(x),
-                           nn.ReLU()]
+                           nn.LeakyReLU()]
                 in_channels = x
         return nn.Sequential(*layers)
 

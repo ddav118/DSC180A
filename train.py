@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 # training
-def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writer=None):
+def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, writer=None):
     model.train()
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -12,16 +12,17 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
     # Here, we use enumerate(training_loader) instead of
     # iter(training_loader) so that we can track the batch
     # index and do some intra-epoch reporting
-    for i, data in tqdm(enumerate(training_loader), total=len(training_loader)):
+    for i, (image, bnpp, _) in tqdm(enumerate(training_loader), total=len(training_loader)):
         # Every data instance is an input + label pair
         
-        image, bnpp = data
+        #image, bnpp, _= data
         image, bnpp = image.to(device, non_blocking=True), bnpp.to(device, non_blocking=True)
         #bnpp = bnpp.float()
         
         # print('image size: ',image.shape)
         #print(torch.mean(image))
         #HERE
+        
         
         pred = model(image)
         # print('BNPP size: ',bnpp.shape)
@@ -33,7 +34,7 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
         loss = loss_fn(torch.squeeze(pred,1), bnpp)
         #print('loss: ',loss.item())
         # Backpropagation
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
         loss.backward()
         optimizer.step()
         
@@ -55,7 +56,11 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, tb_writ
         # Gather data and report
         #running_loss += loss.item()
         losses = np.append(losses, loss.item())
-        
+        #writer.add_text('batch_losses', \
+        #        f'''batch #{i}\n
+        #        losses: {losses}
+        #        ''',\
+        #        0)
         #print(f"{running_loss=}")
     #last_loss += running_loss / (len(training_loader)) #number of batches
     #print('last_loss: ',last_loss)
@@ -78,10 +83,10 @@ def test1Epoch(epoch_index, model, loss_fn, valid_loader, tb_writer=None):
     # iter(training_loader) so that we can track the batch
     # index and do some intra-epoch reporting
     with torch.no_grad():
-        for i, data in tqdm(enumerate(valid_loader), total=len(valid_loader)):
+        for i, (image, bnpp, _) in tqdm(enumerate(valid_loader), total=len(valid_loader)):
             # Every data instance is an input + label pair
 
-            image, bnpp = data
+            #image, bnpp,_ = data
             image, bnpp = image.to(device, non_blocking=True), bnpp.to(device, non_blocking=True)
             #bnpp = bnpp.float()
             #print('BNPP: ',bnpp)
