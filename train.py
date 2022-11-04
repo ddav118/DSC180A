@@ -34,7 +34,11 @@ def train1Epoch(epoch_index, model, optimizer, loss_fn, training_loader, writer=
         loss = loss_fn(torch.squeeze(pred,1), bnpp)
         #print('loss: ',loss.item())
         # Backpropagation
+<<<<<<< HEAD
+        optimizer.zero_grad()#set_to_none=True)
+=======
         optimizer.zero_grad(set_to_none=True)
+>>>>>>> 1960aca70cc080d2575d221d6bf6f58b6cdad5df
         loss.backward()
         optimizer.step()
         
