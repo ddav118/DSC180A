@@ -15,29 +15,29 @@ class VGG(nn.Module):
         self.linear_layers = nn.Sequential(
             #apply flatten layer?
             #https://programmerall.com/article/8686604124/
-            nn.Flatten(),
+        nn.Flatten(),
             #Dropout should not be included when performing on validation data
             #Tune Dropout parameter for performance, lower it and check performance
             #https://nnart.org/should-you-use-dropout/
             #https://discuss.pytorch.org/t/what-is-the-difference-between-nn-dropout2d-and-nn-dropout/108192
             
-<<<<<<< HEAD
-            nn.Linear(in_features=512*7*7, out_features=4096),
-            nn.LeakyReLU(),
-            #nn.Dropout(0.3),
-            nn.Linear(in_features=4096, out_features=4096),
-            nn.LeakyReLU(),
-            #nn.Dropout(0.3),
-            nn.Linear(in_features=4096, out_features=1)
-=======
-            nn.Linear(in_features=512*7*7, out_features=500),
-            nn.LeakyReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(in_features=500, out_features=500),
-            nn.LeakyReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(in_features=500, out_features=1)
->>>>>>> 1960aca70cc080d2575d221d6bf6f58b6cdad5df
+
+#         nn.Linear(in_features=512*7*7, out_features=4096),
+#         nn.LeakyReLU(),
+#             #nn.Dropout(0.3),
+#         nn.Linear(in_features=4096, out_features=4096),
+#         nn.LeakyReLU(),
+#             #nn.Dropout(0.3),
+#         nn.Linear(in_features=4096, out_features=1),
+
+        nn.Linear(in_features=512*7*7, out_features=500),
+        nn.LeakyReLU(),
+        nn.Dropout(0.5),
+        nn.Linear(in_features=500, out_features=500),
+        nn.LeakyReLU(),
+        nn.Dropout(0.5),
+        nn.Linear(in_features=500, out_features=1)
+# 1960aca70cc080d2575d221d6bf6f58b6cdad5df
         )
 
     def forward(self, x):
