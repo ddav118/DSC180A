@@ -1,4 +1,11 @@
+import torch
 import torch.nn as nn
+from torch.utils import data
+from torchvision.models import resnet152
+from torchvision import transforms
+from torchvision import datasets
+import matplotlib.pyplot as plt
+import numpy as np
 
 cfg = {
     'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
@@ -11,25 +18,11 @@ class VGG(nn.Module):
     def __init__(self, vgg_name):
         super(VGG, self).__init__()
         self.features = self._make_layers(cfg[vgg_name])
-       
+        
+        #self.features_conv = self.features[:40]
+        
         self.linear_layers = nn.Sequential(
-            #apply flatten layer?
-            #https://programmerall.com/article/8686604124/
         nn.Flatten(),
-            #Dropout should not be included when performing on validation data
-            #Tune Dropout parameter for performance, lower it and check performance
-            #https://nnart.org/should-you-use-dropout/
-            #https://discuss.pytorch.org/t/what-is-the-difference-between-nn-dropout2d-and-nn-dropout/108192
-            
-
-#         nn.Linear(in_features=512*7*7, out_features=4096),
-#         nn.LeakyReLU(),
-#             #nn.Dropout(0.3),
-#         nn.Linear(in_features=4096, out_features=4096),
-#         nn.LeakyReLU(),
-#             #nn.Dropout(0.3),
-#         nn.Linear(in_features=4096, out_features=1),
-
         nn.Linear(in_features=512*7*7, out_features=500),
         nn.LeakyReLU(),
         nn.Dropout(0.5),
@@ -37,14 +30,11 @@ class VGG(nn.Module):
         nn.LeakyReLU(),
         nn.Dropout(0.5),
         nn.Linear(in_features=500, out_features=1)
-# 1960aca70cc080d2575d221d6bf6f58b6cdad5df
         )
 
     def forward(self, x):
         out = self.features(x) #conv layers
-        #out = out.view(out.size(0), -1) #flatten layer
         out = self.linear_layers(out) #fully-connected layers
-        #out = out.view(out.size(0), -1) #flatten layer
         return out
 
     def _make_layers(self, cfg):
@@ -60,3 +50,35 @@ class VGG(nn.Module):
                 in_channels = x
         return nn.Sequential(*layers)
 
+    
+class ResNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.gradients = None
+        self.tensorhook = []
+        self.layerhook = []
+        self.selected_out = None
+        
+        #PRETRAINED MODEL
+        self.pretrained = resnet152(pretrained=True)
+        self.pretrained.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
+        self.layerhook.append(self.pretrained.layer4.register_forward_hook(self.forward_hook()))
+        
+        for p in self.pretrained.parameters():
+            p.requires_grad = True
+    
+    def activations_hook(self,grad):
+        self.gradients = grad
+
+    def get_act_grads(self):
+        return self.gradients
+
+    def forward_hook(self):
+        def hook(module, inp, out):
+            self.selected_out = out
+            self.tensorhook.append(out.register_hook(self.activations_hook))
+        return hook
+
+    def forward(self,x):
+        out = self.pretrained(x)
+        return out, self.selected_out
